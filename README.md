@@ -4,20 +4,14 @@
 
 - docker版本还结合了dsadsadsss大佬的 [Docker-for-Nezha-Argo-server-v0.x](https://github.com/dsadsadsss/Docker-for-Nezha-Argo-server-v0.x) 。
 
-- docker镜像 `mikehand888/argo-nezha:latest` ， 支持 amd64 和 arm64 架构。
+- 使用前，**请先阅读 [F佬原项目教程](https://github.com/Kiritocyz/Argo-Nezha-Service-Container#f%E4%BD%AC%E5%8E%9F%E9%A1%B9%E7%9B%AE%E6%95%99%E7%A8%8B)** ，了解具体如何部署，本项目仅在一些变量上有所不同。
 
-- VPS脚本部署
+<details>
+  <summary>更新日志</summary>
 
-```
-bash <(wget -qO- https://raw.githubusercontent.com/Kiritocyz/Argo-Nezha-Service-Container/main/dashboard.sh)
-```
-
-- 使用前，**请先阅读 [F佬原项目教程](https://github.com/Kiritocyz/Argo-Nezha-Service-Container#f%E4%BD%AC%E5%8E%9F%E9%A1%B9%E7%9B%AE%E6%95%99%E7%A8%8B)** ，了解具体如何部署，本项目仅在环境变量上有所不同。
-
-## 更新日志
 - 2025.11.4
   - 修复v1面板的固定版本问题。
-  - 开始测试vps脚本。
+  - 测试vps脚本并完成。
 - 2025.07.14
   - 增加了`AGENT_VERSION`变量以控制探针版本。
   - docker版本目前已很完善，不出意外以后将佛系更新（其实nezha官方也已步入稳定周期）。
@@ -29,37 +23,59 @@ bash <(wget -qO- https://raw.githubusercontent.com/Kiritocyz/Argo-Nezha-Service-
   - 更新了README.md。
 - 2025.04.14
   - 经过4天的测试，argo-nezha兼容v0和v1版本可以正常使用。
+</details>
 
-## docker版本环境变量说明
+## 部署前的准备工作
+- 域名准备
+  - 在 `cf` 官网上找到使用域名的 `网络` 选项，将 `gRPC` 开关打开
+  - 获取 `argo` 认证，[点击前往教程](https://github.com/Kiritocyz/Argo-Nezha-Service-Container/blob/main/README.md#argo-%E8%AE%A4%E8%AF%81%E7%9A%84%E8%8E%B7%E5%8F%96%E6%96%B9%E5%BC%8F-json-%E6%88%96-token)
+- github账号准备
+  - 获得 `github` 的 `OAuth 2.0` 认证和 `PAT` ,[点击前往教程](https://github.com/Kiritocyz/Argo-Nezha-Service-Container/blob/main/README.md#%E5%87%86%E5%A4%87%E9%9C%80%E8%A6%81%E7%94%A8%E7%9A%84%E5%8F%98%E9%87%8F)，注意 `v0` 和 `v1` 的 `OAuth 2.0` 认证是不同的，[点击前往了解区别](https://github.com/Kiritocyz/Argo-Nezha-Service-Container#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%BB%A5%E5%8F%8A%E5%9D%91%E7%82%B9)。
+## docker镜像及其环境变量说明
+
+docker镜像： `mikehand888/argo-nezha:latest` ， 支持 amd64 和 arm64 架构。
+
+[容器平台上部署教程，点击前往](https://github.com/Kiritocyz/Argo-Nezha-Service-Container/blob/main/README.md#paas-%E9%83%A8%E7%BD%B2%E5%AE%9E%E4%BE%8B)
+
+[VPS上docker部署教程，点击前往](https://github.com/Kiritocyz/Argo-Nezha-Service-Container/blob/main/README.md#vps-%E9%83%A8%E7%BD%B2%E6%96%B9%E5%BC%8F-1-----docker)
+
 
   | 变量名        | 是否必须  | 备注 |
   | ------------ | ------   | ---- |
-  | GH_USER             | v0必填 | github 的用户名，用于面板管理授权 |
-  | GH_CLIENTID         | v0必填 | 在 github 上申请 |
-  | GH_CLIENTSECRET     | v0必填 | 在 github 上申请 |
+  | GH_USER             | 仅v0必填 | github 的用户名，用于面板管理授权 |
+  | GH_CLIENTID         | 仅v0必填 | 在 github 上申请 |
+  | GH_CLIENTSECRET     | 仅v0必填 | 在 github 上申请 |
   | GH_BACKUP_USER      | 备份或填 | 在 github 上备份哪吒服务端数据库的 github 用户名，不填则与面板管理授权的账户 GH_USER 一致  |
   | GH_REPO             | 备份必填 | 在 github 上备份哪吒服务端数据库文件的 github 库 |
   | GH_EMAIL            | 备份必填 | github 的邮箱，用于备份库的 git 推送 |
   | GH_PAT              | 备份必填 | github 的私钥（PAT），用于备份库的 git 推送 |
-  | REVERSE_PROXY_MODE  | 否 | 默认使用 Caddy 应用来反代，可以不填。v0可选 Nginx 或 gRPCwebProxy；v1必须用 Caddy ，不填 |
-  | ARGO_AUTH           | v0、v1均必填 | Json: 从 https://fscarmen.cloudflare.now.cc 获取的 Argo Json<br> Token: 从 Cloudflare 官网获取 |
-  | ARGO_DOMAIN         | v0、v1均必填 | Argo 域名 |
+  | REVERSE_PROXY_MODE  | 否 | 默认使用 Caddy 应用来反代，可以不填。v0可选 Nginx 或 gRPCwebProxy；v1必须用 Caddy |
+  | ARGO_AUTH           | 必填 | Json: 从 https://fscarmen.cloudflare.now.cc 获取的 Argo Json<br> Token: 从 Cloudflare 官网获取 |
+  | ARGO_DOMAIN         | 必填 | Argo 域名 |
   | NO_AUTO_RENEW       | 否 | 默认不需要该变量，即每天定时同步在线最新的备份和还原脚本。如不需要该功能，设置此变量为 `1` |
   | DASHBOARD_VERSION   | 否 | 指定面板的版本。`v0.00.00` 的格式和 `v1.00.00` 的格式，填写了将会把版本固定在所填版本。不填则是最新的v1面板 |
-  | AGENT_VERSION   | 否 | 指定探针的版本。`v0.00.00` 的格式和 `v1.00.00` 的格式，填写了将会把版本固定在所填版本。不填有两种情况：对于v1面板是保持最新的v1探针；对于v0面板是v0.20.5版本 |
+  | AGENT_VERSION       | 否 | 指定探针的版本。`v0.00.00` 的格式和 `v1.00.00` 的格式，填写了将会把版本固定在所填版本。不填有两种情况：对于v1面板是保持最新的v1探针；对于v0面板是v0.20.5版本 |
+  | PRO_PORT            | 否 | 容器平台的开放端口，不填默认为80。如果容器开放的端口不为80且argo隧道使用的token，则修改此处并手动修改隧道设置里对应的端口 |
   | UUID                | 否 | 填写会有节点，在日志查看base64 |
   | BACKUP_TIME         | 否 | 自定义备份时间，不填默认为 `0 4 * * *`，即每天北京时间4点备份 |
-  | BACKUP_NUM         | 否 | 自定义备份仓库中的备份总数，不填默认为 5，即仓库里只保留5个备份 |
+  | BACKUP_NUM          | 否 | 自定义备份仓库中的备份总数，不填默认为 5，即仓库里只保留5个备份 |
 
-## 常见问题以及坑点
+## 在VPS上使用脚本部署
+
+```
+bash <(wget -qO- https://raw.githubusercontent.com/Kiritocyz/Argo-Nezha-Service-Container/main/dashboard.sh)
+```
+跟随脚本步骤即可部署完成
+
+## 常见问题、坑点
   | 常见问题       | 注意内容  |
   | ------------ | ------   |
-  | [探针不上线](https://github.com/Kiritocyz/Argo-Nezha-Service-Container#%E5%87%86%E5%A4%87%E9%9C%80%E8%A6%81%E7%94%A8%E7%9A%84%E5%8F%98%E9%87%8F) | 请在 `cf` 面板查看 `argo`域名的 `grpc` 设置，一定要开启！还有可能是域名的问题，可以换个域名试试 |
+  | 探针不上线，[点击前往域名准备教程](https://github.com/Kiritocyz/Argo-Nezha-Service-Container#%E5%87%86%E5%A4%87%E9%9C%80%E8%A6%81%E7%94%A8%E7%9A%84%E5%8F%98%E9%87%8F) | 请在 `cf` 面板查看 `argo`域名的 `grpc` 设置，一定要开启！还有可能是域名的问题，可以换个域名试试 |
   | agent的安装命令 | 端口需确认为 `443` ，`tls` 需确认为 `true` |
   | OAuth 2.0 | v0为 `https://你的面板域名/oauth2/callback`，v1为 `https://你的面板域名/api/v1/oauth2/callback` |
-  | [使用备份](https://github.com/Kiritocyz/Argo-Nezha-Service-Container?tab=readme-ov-file#%E6%89%8B%E5%8A%A8%E5%A4%87%E4%BB%BD%E6%95%B0%E6%8D%AE) | 有的容器重启会丢失数据，需要使用备份，需要 `GH_USER`或`GH_BACKUP_USER`、`GH_REPO`、`GH_EMAIL`、`GH_PAT` 这4个变量有值 |
+  | 使用备份，[点击前往备份教程](https://github.com/Kiritocyz/Argo-Nezha-Service-Container?tab=readme-ov-file#%E6%89%8B%E5%8A%A8%E5%A4%87%E4%BB%BD%E6%95%B0%E6%8D%AE) | 有的容器重启会丢失数据，需要使用备份，需要 `GH_USER`或`GH_BACKUP_USER`、`GH_REPO`、`GH_EMAIL`、`GH_PAT` 这4个变量有值 |
   | 注意自动还原 | 容器在修改环境变量后会重新部署，注意备份库会自动还原备份 |
-  | [使用本地ssh](https://github.com/Kiritocyz/Argo-Nezha-Service-Container?tab=readme-ov-file#ssh-%E6%8E%A5%E5%85%A5) | 需要 `GH_CLIENTID`、`GH_CLIENTSECRET` 这2个变量有值 |
+  | 使用本地ssh，[点击前往ssh教程](https://github.com/Kiritocyz/Argo-Nezha-Service-Container?tab=readme-ov-file#ssh-%E6%8E%A5%E5%85%A5) | 需要 `GH_CLIENTID`、`GH_CLIENTSECRET` 这2个变量有值 |
 
 * * *
 <br>
